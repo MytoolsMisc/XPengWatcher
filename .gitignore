@@ -42,9 +42,6 @@ xpeng.db
 noodometer
 *.log
 
-# Local working screenshot
-/XPeng Vehicule ReportEN.png
-
 # Temporary files
 *.tmp
 *.swp
