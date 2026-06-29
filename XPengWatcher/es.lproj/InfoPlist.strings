@@ -1,0 +1,1 @@
+"NSLocalNetworkUsageDescription" = "XPengWatcher se conecta al servidor MQTT y publica el informe del vehículo en la red local.";

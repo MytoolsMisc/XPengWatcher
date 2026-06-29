@@ -1,0 +1,51 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode user data and build products
+DerivedData/
+build/
+Build/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Distribution artifacts
+*.app
+*.dmg
+*.pkg
+*.zip
+
+# Signing material — never commit private certificates or profiles
+*.p12
+*.cer
+*.provisionprofile
+*.mobileprovision
+
+# XPengWatcher runtime data
+xpeng.db
+*.db-wal
+*.db-shm
+noodometer
+*.log
+
+# Local working screenshot
+/XPeng Vehicule ReportEN.png
+
+# Temporary files
+*.tmp
+*.swp
+*~
