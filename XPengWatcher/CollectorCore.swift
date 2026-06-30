@@ -1537,8 +1537,14 @@ func clickAndDrag(from startPoint: CGPoint, to endPoint: CGPoint) {
     mouseUp?.post(tap: .cghidEventTap)
 }
 
-func scrollWindowDown(in window: AXUIElement, config: Config) {
-    logVerbose("Scrolling settings page down with drag gesture", config: config)
+func scrollWindow(
+    in window: AXUIElement,
+    from startYFraction: CGFloat,
+    to endYFraction: CGFloat,
+    description: String,
+    config: Config
+) {
+    logVerbose(description, config: config)
 
     _ = AXUIElementPerformAction(window, kAXRaiseAction as CFString)
     Thread.sleep(forTimeInterval: 0.3)
@@ -1550,8 +1556,8 @@ func scrollWindowDown(in window: AXUIElement, config: Config) {
     }
 
     let x = position.x + size.width * 0.5
-    let startPoint = CGPoint(x: x, y: position.y + size.height * 0.88)
-    let endPoint = CGPoint(x: x, y: position.y + size.height * 0.15)
+    let startPoint = CGPoint(x: x, y: position.y + size.height * startYFraction)
+    let endPoint = CGPoint(x: x, y: position.y + size.height * endYFraction)
 
     let moveEvent = CGEvent(
         mouseEventSource: nil,
@@ -1563,6 +1569,36 @@ func scrollWindowDown(in window: AXUIElement, config: Config) {
     Thread.sleep(forTimeInterval: 0.2)
 
     clickAndDrag(from: startPoint, to: endPoint)
+}
+
+func scrollWindowDown(in window: AXUIElement, config: Config) {
+    scrollWindow(
+        in: window,
+        from: 0.88,
+        to: 0.15,
+        description: "Scrolling settings page down with drag gesture",
+        config: config
+    )
+}
+
+func scrollMainPageSlightlyDown(in window: AXUIElement, config: Config) {
+    scrollWindow(
+        in: window,
+        from: 0.78,
+        to: 0.50,
+        description: "Scrolling main page slightly to reveal charge limit and interior temperature",
+        config: config
+    )
+}
+
+func restoreMainPageAfterSmallScroll(in window: AXUIElement, config: Config) {
+    scrollWindow(
+        in: window,
+        from: 0.50,
+        to: 0.78,
+        description: "Restoring main page after additional telemetry read",
+        config: config
+    )
 }
 
 func pressSettingsButton(in window: AXUIElement, config: Config) -> Bool {
@@ -1886,6 +1922,19 @@ func readAndPublishTelemetry(config: Config, onError: ((Error) -> Void)? = nil) 
 
     if config.readOdometerWithForeground {
         if !isSettingsPage(texts: texts) {
+            let initialTelemetry = parseTelemetry(from: texts, config: config)
+            if initialTelemetry.chargeLimitPercent == nil || initialTelemetry.interiorTempC == nil {
+                scrollMainPageSlightlyDown(in: mainWindow, config: config)
+                Thread.sleep(forTimeInterval: 1.0)
+
+                var scrolledMainPageTexts: [String] = []
+                collectStaticTexts(mainWindow, texts: &scrolledMainPageTexts)
+                combinedTexts.append(contentsOf: scrolledMainPageTexts)
+
+                restoreMainPageAfterSmallScroll(in: mainWindow, config: config)
+                Thread.sleep(forTimeInterval: 0.5)
+            }
+
             if pressSettingsButton(in: mainWindow, config: config) {
                 settingsWasOpened = true
                 Thread.sleep(forTimeInterval: 3.0)
