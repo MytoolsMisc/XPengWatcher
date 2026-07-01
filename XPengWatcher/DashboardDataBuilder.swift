@@ -22,6 +22,7 @@ private struct TripPayload: Codable {
     let distanceKm: Int
     let durationSeconds: Double
     let energyKWh: Double
+    let consumptionKWhPer100Km: Double?
     let startSOC: Int
     let endSOC: Int
     let energyPoints: [EnergyPointPayload]
@@ -34,6 +35,7 @@ private struct ChargePayload: Codable {
     let energyKWh: Double
     let type: String?
     let maxPowerKW: Double?
+    let averagePowerKW: Double?
     let startSOC: Int?
     let endSOC: Int?
     let powerPoints: [PowerPointPayload]
@@ -87,12 +89,14 @@ enum DashboardDataBuilder {
             var detail = details[key] ?? emptyDay(key)
             let socUsed = max(0, trip.start.socPercent - trip.end.socPercent)
             let energy = effectiveCapacity * Double(socUsed) / 100.0
-            var energyPoints = rows
+            let tripRows = rows
                 .filter { $0.timestamp >= trip.start.timestamp && $0.timestamp <= trip.end.timestamp && !$0.charging }
-                .map { row in
-                    EnergyPointPayload(
+            var previousSOC = trip.start.socPercent
+            var energyPoints = tripRows.map { row in
+                    defer { previousSOC = row.socPercent }
+                    return EnergyPointPayload(
                         minute: minuteOfDay(row.timestamp),
-                        kWh: effectiveCapacity * Double(max(0, trip.start.socPercent - row.socPercent)) / 100.0,
+                        kWh: effectiveCapacity * Double(max(0, previousSOC - row.socPercent)) / 100.0,
                         powerKW: nil
                     )
                 }
@@ -100,7 +104,8 @@ enum DashboardDataBuilder {
                 energyPoints.insert(EnergyPointPayload(minute: minuteOfDay(trip.start.timestamp), kWh: 0, powerKW: nil), at: 0)
             }
             if energyPoints.last?.minute != minuteOfDay(trip.end.timestamp) {
-                energyPoints.append(EnergyPointPayload(minute: minuteOfDay(trip.end.timestamp), kWh: energy, powerKW: nil))
+                let measuredEnergy = energyPoints.reduce(0) { $0 + $1.kWh }
+                energyPoints.append(EnergyPointPayload(minute: minuteOfDay(trip.end.timestamp), kWh: max(0, energy - measuredEnergy), powerKW: nil))
             }
             let payload = TripPayload(
                 startMinute: minuteOfDay(trip.start.timestamp),
@@ -108,6 +113,7 @@ enum DashboardDataBuilder {
                 distanceKm: trip.distanceKm,
                 durationSeconds: trip.durationSeconds,
                 energyKWh: energy,
+                consumptionKWhPer100Km: trip.distanceKm > 0 ? energy / Double(trip.distanceKm) * 100.0 : nil,
                 startSOC: trip.start.socPercent,
                 endSOC: trip.end.socPercent,
                 energyPoints: energyPoints
@@ -127,6 +133,7 @@ enum DashboardDataBuilder {
             let rawPoints = pointsBySession[session.id, default: []]
                 .filter { $0.charging }
                 .sorted { $0.timestamp < $1.timestamp }
+            let measuredPowers = rawPoints.compactMap(\.chargePowerKW)
             var powerPoints = rawPoints.compactMap { point in
                 point.chargePowerKW.map {
                     PowerPointPayload(minute: minuteOfDay(point.timestamp), powerKW: $0)
@@ -138,6 +145,10 @@ enum DashboardDataBuilder {
                     PowerPointPayload(minute: minuteOfDay(session.displayEndTimestamp), powerKW: maxPower)
                 ]
             }
+            let durationHours = session.durationSeconds / 3600.0
+            let averagePower = measuredPowers.isEmpty
+                ? (durationHours > 0 && energy > 0 ? energy / durationHours : nil)
+                : measuredPowers.reduce(0, +) / Double(measuredPowers.count)
             let payload = ChargePayload(
                 startMinute: minuteOfDay(session.startTimestamp),
                 endMinute: minuteOfDay(session.displayEndTimestamp),
@@ -145,6 +156,7 @@ enum DashboardDataBuilder {
                 energyKWh: energy,
                 type: session.chargeType,
                 maxPowerKW: session.maxChargePowerKW,
+                averagePowerKW: averagePower,
                 startSOC: session.startSocPercent,
                 endSOC: session.endSocPercent,
                 powerPoints: powerPoints

@@ -253,6 +253,7 @@ final class ReportHTTPServer: @unchecked Sendable {
             .day.empty { visibility: hidden; }
             .day .number { font-weight: 700; margin-bottom: 7px; }
             .day .metric { display: block; font-size: 11px; line-height: 1.45; color: #b9c8dc; white-space: nowrap; }
+            .day .average { color: #8de5d3; font-weight: 700; margin-top: 3px; }
             .day.active { background: linear-gradient(145deg, #122844, #12362f); }
             .week-total { min-height: 106px; padding: 9px; border: 1px solid #446075; border-radius: 11px;
                           background: linear-gradient(145deg, #17263a, #243249); }
@@ -317,14 +318,14 @@ final class ReportHTTPServer: @unchecked Sendable {
           (() => {
             const lang = document.documentElement.lang;
             const words = {
-              en:{charged:"Charged",consumed:"Consumed",driving:"Driving",charging:"Charging",distance:"Distance",trips:"Trips",charges:"Charges",tripEnergy:"Driving energy",chargeEnergy:"Charging energy",chargePower:"Charging power",textReport:"Text summary",noActivity:"No activity",week:"Week",kwh:"kWh"},
-              fr:{charged:"Chargé",consumed:"Consommé",driving:"Conduite",charging:"Recharge",distance:"Distance",trips:"Trajets",charges:"Recharges",tripEnergy:"Énergie consommée",chargeEnergy:"Énergie rechargée",chargePower:"Puissance de recharge",textReport:"Résumé texte",noActivity:"Aucune activité",week:"Semaine",kwh:"kWh"},
-              pt:{charged:"Carregado",consumed:"Consumido",driving:"Condução",charging:"Carregamento",distance:"Distância",trips:"Viagens",charges:"Carregamentos",tripEnergy:"Energia de condução",chargeEnergy:"Energia carregada",chargePower:"Potência de carregamento",textReport:"Resumo em texto",noActivity:"Sem atividade",week:"Semana",kwh:"kWh"},
-              es:{charged:"Cargado",consumed:"Consumido",driving:"Conducción",charging:"Carga",distance:"Distancia",trips:"Trayectos",charges:"Cargas",tripEnergy:"Energía consumida",chargeEnergy:"Energía cargada",chargePower:"Potencia de carga",textReport:"Resumen de texto",noActivity:"Sin actividad",week:"Semana",kwh:"kWh"},
-              de:{charged:"Geladen",consumed:"Verbraucht",driving:"Fahrzeit",charging:"Ladezeit",distance:"Strecke",trips:"Fahrten",charges:"Ladevorgänge",tripEnergy:"Fahrenergie",chargeEnergy:"Ladeenergie",chargePower:"Ladeleistung",textReport:"Textübersicht",noActivity:"Keine Aktivität",week:"Woche",kwh:"kWh"},
-              nl:{charged:"Geladen",consumed:"Verbruikt",driving:"Rijtijd",charging:"Laadtijd",distance:"Afstand",trips:"Ritten",charges:"Laadsessies",tripEnergy:"Rij-energie",chargeEnergy:"Laadenergie",chargePower:"Laadvermogen",textReport:"Tekstoverzicht",noActivity:"Geen activiteit",week:"Week",kwh:"kWh"},
-              it:{charged:"Caricata",consumed:"Consumata",driving:"Guida",charging:"Ricarica",distance:"Distanza",trips:"Viaggi",charges:"Ricariche",tripEnergy:"Energia consumata",chargeEnergy:"Energia ricaricata",chargePower:"Potenza di ricarica",textReport:"Riepilogo testuale",noActivity:"Nessuna attività",week:"Settimana",kwh:"kWh"},
-              da:{charged:"Opladet",consumed:"Forbrugt",driving:"Kørsel",charging:"Opladning",distance:"Distance",trips:"Ture",charges:"Opladninger",tripEnergy:"Køreenergi",chargeEnergy:"Opladningsenergi",chargePower:"Ladeeffekt",textReport:"Tekstoversigt",noActivity:"Ingen aktivitet",week:"Uge",kwh:"kWh"}
+              en:{charged:"Charged",consumed:"Consumed",driving:"Driving",charging:"Charging",distance:"Distance",trips:"Trips",charges:"Charges",tripEnergy:"Driving energy",intervalEnergy:"Energy per interval",chargeEnergy:"Charging energy",chargePower:"Charging power",textReport:"Text summary",noActivity:"No activity",week:"Week",kwh:"kWh"},
+              fr:{charged:"Chargé",consumed:"Consommé",driving:"Conduite",charging:"Recharge",distance:"Distance",trips:"Trajets",charges:"Recharges",tripEnergy:"Énergie consommée",intervalEnergy:"Énergie par intervalle",chargeEnergy:"Énergie rechargée",chargePower:"Puissance de recharge",textReport:"Résumé texte",noActivity:"Aucune activité",week:"Semaine",kwh:"kWh"},
+              pt:{charged:"Carregado",consumed:"Consumido",driving:"Condução",charging:"Carregamento",distance:"Distância",trips:"Viagens",charges:"Carregamentos",tripEnergy:"Energia de condução",intervalEnergy:"Energia por intervalo",chargeEnergy:"Energia carregada",chargePower:"Potência de carregamento",textReport:"Resumo em texto",noActivity:"Sem atividade",week:"Semana",kwh:"kWh"},
+              es:{charged:"Cargado",consumed:"Consumido",driving:"Conducción",charging:"Carga",distance:"Distancia",trips:"Trayectos",charges:"Cargas",tripEnergy:"Energía consumida",intervalEnergy:"Energía por intervalo",chargeEnergy:"Energía cargada",chargePower:"Potencia de carga",textReport:"Resumen de texto",noActivity:"Sin actividad",week:"Semana",kwh:"kWh"},
+              de:{charged:"Geladen",consumed:"Verbraucht",driving:"Fahrzeit",charging:"Ladezeit",distance:"Strecke",trips:"Fahrten",charges:"Ladevorgänge",tripEnergy:"Fahrenergie",intervalEnergy:"Energie pro Intervall",chargeEnergy:"Ladeenergie",chargePower:"Ladeleistung",textReport:"Textübersicht",noActivity:"Keine Aktivität",week:"Woche",kwh:"kWh"},
+              nl:{charged:"Geladen",consumed:"Verbruikt",driving:"Rijtijd",charging:"Laadtijd",distance:"Afstand",trips:"Ritten",charges:"Laadsessies",tripEnergy:"Rij-energie",intervalEnergy:"Energie per interval",chargeEnergy:"Laadenergie",chargePower:"Laadvermogen",textReport:"Tekstoverzicht",noActivity:"Geen activiteit",week:"Week",kwh:"kWh"},
+              it:{charged:"Caricata",consumed:"Consumata",driving:"Guida",charging:"Ricarica",distance:"Distanza",trips:"Viaggi",charges:"Ricariche",tripEnergy:"Energia consumata",intervalEnergy:"Energia per intervallo",chargeEnergy:"Energia ricaricata",chargePower:"Potenza di ricarica",textReport:"Riepilogo testuale",noActivity:"Nessuna attività",week:"Settimana",kwh:"kWh"},
+              da:{charged:"Opladet",consumed:"Forbrugt",driving:"Kørsel",charging:"Opladning",distance:"Distance",trips:"Ture",charges:"Opladninger",tripEnergy:"Køreenergi",intervalEnergy:"Energi pr. interval",chargeEnergy:"Opladningsenergi",chargePower:"Ladeeffekt",textReport:"Tekstoversigt",noActivity:"Ingen aktivitet",week:"Uge",kwh:"kWh"}
             };
             const t = words[lang] || words.en;
             let month = new Date(); month.setDate(1); let selectedDate = null, selectedChargeKey = null, selectedTripKey = null;
@@ -357,7 +358,8 @@ final class ReportHTTPServer: @unchecked Sendable {
                 for(const entry of week){
                   if(!entry){ cells.push('<div class="day empty"></div>'); continue; }
                   const x=entry.data, active=x&&(x.tripCount||x.chargeCount);
-                  const metrics=x?`<span class="metric">⚡ +${number(x.chargedKWh)} ${t.kwh} · ${duration(x.chargingSeconds)}</span><span class="metric">🚗 −${number(x.consumedKWh)} ${t.kwh} · ${duration(x.drivingSeconds)}</span><span class="metric">${x.distanceKm} km</span>`:"";
+                  const dailyAverage=x&&x.distanceKm>0?`${number(x.consumedKWh/x.distanceKm*100)} kWh/100 km`:"—";
+                  const metrics=x?`<span class="metric">⚡ +${number(x.chargedKWh)} ${t.kwh} · ${duration(x.chargingSeconds)}</span><span class="metric">🚗 −${number(x.consumedKWh)} ${t.kwh} · ${duration(x.drivingSeconds)}</span><span class="metric">${x.distanceKm} km</span><span class="metric average">${dailyAverage}</span>`:"";
                   cells.push(`<button class="day ${active?'active':''}" data-date="${entry.key}"><div class="number">${entry.day}</div>${metrics}</button>`);
                 }
                 const totals=week.reduce((a,e)=>{const x=e?.data;if(x){a.charged+=x.chargedKWh;a.consumed+=x.consumedKWh;a.distance+=x.distanceKm;}return a;},{charged:0,consumed:0,distance:0});
@@ -378,10 +380,10 @@ final class ReportHTTPServer: @unchecked Sendable {
               chart(document.getElementById("tripChart"),data.tripPoints,"#48d8c0"); chart(document.getElementById("chargeChart"),data.chargePoints,"#55a8ff");
               document.getElementById("tripsTitle").textContent=`${t.trips} (${data.trips.length})`; document.getElementById("chargesTitle").textContent=`${t.charges} (${data.charges.length})`;
               const tripList=document.getElementById("tripList");
-              tripList.innerHTML=data.trips.length?data.trips.map((x,i)=>`<button class="event event-button" data-trip-index="${i}">${time(x.startMinute)}–${time(x.endMinute)} · ${x.distanceKm} km · ${number(x.energyKWh)} ${t.kwh} · ${x.startSOC}%→${x.endSOC}%</button>`).join(""):`<div class="event">${t.noActivity}</div>`;
+              tripList.innerHTML=data.trips.length?data.trips.map((x,i)=>`<button class="event event-button" data-trip-index="${i}">${time(x.startMinute)}–${time(x.endMinute)} · ${x.distanceKm} km · ${number(x.energyKWh)} ${t.kwh} · ${number(x.consumptionKWhPer100Km)} kWh/100 km · ${x.startSOC}%→${x.endSOC}%</button>`).join(""):`<div class="event">${t.noActivity}</div>`;
               tripList.querySelectorAll("[data-trip-index]").forEach(el=>el.onclick=()=>showTripDetail(data.trips[Number(el.dataset.tripIndex)]));
               const chargeList=document.getElementById("chargeList");
-              chargeList.innerHTML=data.charges.length?data.charges.map((x,i)=>`<button class="event event-button" data-charge-index="${i}">${time(x.startMinute)}–${time(x.endMinute)} · ${number(x.energyKWh)} ${t.kwh} · ${escapeHTML(x.type||"")} ${x.maxPowerKW?`· ${number(x.maxPowerKW)} kW`:""}</button>`).join(""):`<div class="event">${t.noActivity}</div>`;
+              chargeList.innerHTML=data.charges.length?data.charges.map((x,i)=>`<button class="event event-button" data-charge-index="${i}">${time(x.startMinute)}–${time(x.endMinute)} · ${number(x.energyKWh)} ${t.kwh} · ${escapeHTML(x.type||"")} ${x.averagePowerKW?`· ⌀ ${number(x.averagePowerKW)} kW`:""}</button>`).join(""):`<div class="event">${t.noActivity}</div>`;
               chargeList.querySelectorAll("[data-charge-index]").forEach(el=>el.onclick=()=>showChargePower(data.charges[Number(el.dataset.chargeIndex)]));
               const selectedCharge=data.charges.find(x=>chargeKey(x)===selectedChargeKey);
               if(selectedCharge) showChargePower(selectedCharge,false); else document.getElementById("powerPanel").hidden=true;
@@ -393,7 +395,7 @@ final class ReportHTTPServer: @unchecked Sendable {
             function showTripDetail(trip,shouldScroll=true){
               const panel=document.getElementById("tripDetailPanel");
               selectedTripKey=tripKey(trip);
-              document.getElementById("tripDetailTitle").textContent=`${t.tripEnergy} · ${time(trip.startMinute)}–${time(trip.endMinute)}`;
+              document.getElementById("tripDetailTitle").textContent=`${t.intervalEnergy} · ${time(trip.startMinute)}–${time(trip.endMinute)}`;
               energyDetailChart(document.getElementById("tripDetailChart"),trip.energyPoints||[],trip.startMinute,trip.endMinute);
               panel.hidden=false;
               if(shouldScroll) panel.scrollIntoView({behavior:"smooth",block:"nearest"});
