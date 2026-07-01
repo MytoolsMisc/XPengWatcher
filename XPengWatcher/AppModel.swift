@@ -213,6 +213,7 @@ final class AppModel: ObservableObject {
             })
             summaryReport = reports[ReportLanguage.application] ?? reports[.english]!
             reportHTTPServer.updateReports(reports)
+            reportHTTPServer.updateDashboard(DashboardSnapshot(calendarByMonth: [:], dayByDate: [:]))
             return
         }
         do {
@@ -227,6 +228,12 @@ final class AppModel: ObservableObject {
             }
             summaryReport = reports[ReportLanguage.application] ?? reports[.english]!
             reportHTTPServer.updateReports(reports)
+            let dashboard = try DashboardDataBuilder.make(
+                databaseURL: databaseURL,
+                batteryCapacityKWh: batteryCapacityKWh,
+                sohPercent: sohPercent
+            )
+            reportHTTPServer.updateDashboard(dashboard)
         } catch {
             let reports = Dictionary(uniqueKeysWithValues: ReportLanguage.allCases.map {
                 ($0, reportFailureMessage(language: $0, error: error))

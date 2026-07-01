@@ -25,6 +25,14 @@ struct VehicleStatusRow {
     let rangeKm: Int?
 }
 
+struct DashboardTelemetryPoint {
+    let timestamp: Date
+    let kWhMissing: Double?
+    let chargePowerKW: Double?
+    let chargeSessionId: Int?
+    let charging: Bool
+}
+
 struct Trip {
     let start: TelemetryRow
     let end: TelemetryRow
@@ -281,6 +289,35 @@ final class Database {
             socPercent: sqliteOptionalIntColumn(statement, 2),
             rangeKm: sqliteOptionalIntColumn(statement, 3)
         )
+    }
+
+    func loadDashboardTelemetryPoints() throws -> [DashboardTelemetryPoint] {
+        let sql = """
+        SELECT timestamp, kwh_missing, charge_power_kw, charge_session_id,
+               COALESCE(charging, 0)
+        FROM telemetry
+        ORDER BY timestamp ASC;
+        """
+        let statement = try prepare(sql)
+        defer { sqlite3_finalize(statement) }
+
+        var points: [DashboardTelemetryPoint] = []
+        while true {
+            let result = sqlite3_step(statement)
+            if result == SQLITE_DONE { break }
+            guard result == SQLITE_ROW else {
+                throw AppError.sqliteStepFailed(analyticsSQLiteErrorMessage(database))
+            }
+            guard let timestampText = sqliteTextColumn(statement, 0) else { continue }
+            points.append(DashboardTelemetryPoint(
+                timestamp: try parseTimestamp(timestampText),
+                kWhMissing: sqliteOptionalDoubleColumn(statement, 1),
+                chargePowerKW: sqliteOptionalDoubleColumn(statement, 2),
+                chargeSessionId: sqliteOptionalIntColumn(statement, 3),
+                charging: sqlite3_column_int64(statement, 4) != 0
+            ))
+        }
+        return points
     }
 
     func loadTelemetryRows() throws -> [TelemetryRow] {
